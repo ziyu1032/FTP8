@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧧 Rocket Red Envelope Drop · Space Word Game</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            font-family: 'Segoe UI', 'Comic Sans MS', 'Chalkboard SE', cursive, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(145deg, #0b1a3a 0%, #1b3b6f 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 12px;
+            overflow: hidden;
+        }
+
+        .game-wrapper {
+            background: #fef9e7;
+            border-radius: 60px 60px 40px 40px;
+            box-shadow: 0 20px 30px rgba(0, 0, 0, 0.6), inset 0 -5px 0 #d4b48c;
+            padding: 20px 25px 25px;
+            max-width: 1000px;
+            width: 100%;
+            border: 6px solid #ffb347;
+            position: relative;
+            background-image: radial-gradient(circle at 20% 30%, #fff9e6 0%, #fef3d6 100%);
+            display: flex;
+            flex-direction: column;
+            height: 95vh;
+            max-height: 750px;
+        }
+
+        .game-wrapper::before,
+        .game-wrapper::after {
+            content: "▲";
+            position: absolute;
+            bottom: -15px;
+            font-size: 40px;
+            color: #ff8c42;
+            text-shadow: 0 4px 0 #b35e1a;
+            transform: scaleX(2);
+            filter: drop-shadow(0 6px 4px rgba(0, 0, 0, 0.3));
+            z-index: 5;
+        }
+
+        .game-wrapper::before { left: 15%; }
+        .game-wrapper::after { right: 15%; }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            background: #e8f0fe;
+            padding: 8px 20px;
+            border-radius: 120px;
+            border: 4px solid #7aa5d9;
+            box-shadow: inset 0 -4px 0 #b0c9e8, 0 8px 0 #3f5e8c;
+            transform: translateY(-6px);
+            position: relative;
+            z-index: 10;
+            flex-shrink: 0;
+        }
+
+        .timer-box {
+            background: #ffd966;
+            border-radius: 40px;
+            padding: 4px 18px;
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: #2d2d2d;
+            border: 3px solid #b38b40;
+            box-shadow: inset 0 -4px 0 #c99f3c, 0 4px 0 #7a5c2e;
+            letter-spacing: 2px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .timer-box span:last-child {
+            font-size: 1.4rem;
+            color: #ab2f2f;
+            margin-left: 2px;
+        }
+
+        .rocket-icon {
+            font-size: 1.6rem;
+            filter: drop-shadow(0 4px 2px rgba(0,0,0,0.3));
+        }
+
+        .score-box {
+            background: #b5e6b5;
+            border-radius: 40px;
+            padding: 4px 24px;
+            font-size: 1.6rem;
+            font-weight: 900;
+            color: #1d4d1d;
+            border: 3px solid #5f9e5f;
+            box-shadow: inset 0 -4px 0 #7fb37f, 0 4px 0 #2c5a2c;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .restart-btn {
+            background: #f05454;
+            border: none;
+            border-radius: 40px;
+            padding: 6px 22px;
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 6px 0 #9e2b2b, 0 4px 8px rgba(0,0,0,0.3);
+            transition: all 0.07s;
+            border: 3px solid #ffb3b3;
+            transform: translateY(-3px);
+            font-family: inherit;
+            letter-spacing: 1px;
+        }
+
+        .restart-btn:active {
+            box-shadow: 0 2px 0 #9e2b2b;
+            transform: translateY(4px);
+        }
+
+        .game-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-height: 0;
+        }
+
+        .falling-zone {
+            flex: 1;
+            position: relative;
+            background: #d9e9fa;
+            border-radius: 40px 40px 20px 20px;
+            border: 4px dashed #7aa5d9;
+            box-shadow: inset 0 8px 20px rgba(0, 20, 50, 0.1);
+            overflow: hidden;
+            min-height: 260px;
+            background-image: radial-gradient(circle at 10% 20%, #ffffff40 0%, #ffffff00 70%);
+        }
+
+        .prompt-zone {
+            background: #fff3cd;
+            border-radius: 30px;
+            border: 4px solid #ffb347;
+            box-shadow: 0 8px 0 #b36b1e, 0 6px 12px rgba(0,0,0,0.2);
+            padding: 14px 20px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100px;
+            flex-shrink: 0;
+            position: relative;
+            z-index: 5;
+            transition: all 0.2s;
+        }
+
+        .prompt-label {
+            font-size: 0.9rem;
+            color: #a1601a;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+
+        .prompt-text {
+            font-size: 2.4rem;
+            font-weight: 900;
+            color: #2a3b4c;
+            text-shadow: 2px 2px 0 #ffd966;
+            line-height: 1.2;
+            word-break: keep-all;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+            padding: 0 8px;
+        }
+
+        .speaker-btn {
+            background: #ffb347;
+            border: 3px solid #b36b1e;
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #8f5e2e, 0 3px 6px rgba(0,0,0,0.2);
+            transition: all 0.07s;
+            margin-top: 6px;
+            color: #2d2d2d;
+        }
+
+        .speaker-btn:active {
+            box-shadow: 0 1px 0 #8f5e2e;
+            transform: translateY(3px);
+        }
+
+        .speaker-btn.playing {
+            background: #6aa84f;
+            border-color: #3f6b2b;
+            box-shadow: 0 4px 0 #2c5a2c;
+            color: white;
+        }
+
+        .red-envelope {
+            position: absolute;
+            width: 130px;
+            height: 100px;
+            background: #e63946;
+            border-radius: 16px 16px 20px 20px;
+            border: 3px solid #ffb347;
+            box-shadow: 0 8px 0 #9e2b2b, 0 10px 16px rgba(0, 0, 0, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-weight: 800;
+            font-size: 1.1rem;
+            color: #fff7e0;
+            padding: 8px 10px;
+            cursor: pointer;
+            transition: transform 0.08s, box-shadow 0.08s, background 0.15s;
+            word-break: keep-all;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            line-height: 1.2;
+            user-select: none;
+            background-image: radial-gradient(circle at 30% 30%, #ff7b7b 0%, #e63946 80%);
+            z-index: 20;
+            will-change: top;
+        }
+
+        .red-envelope.zh {
+            background: #d62828;
+            background-image: radial-gradient(circle at 30% 30%, #ff9e9e 0%, #d62828 80%);
+            font-size: 1.0rem;
+        }
+
+        .red-envelope::after {
+            content: "🚀";
+            position: absolute;
+            top: -10px;
+            right: -8px;
+            font-size: 1.4rem;
+            transform: rotate(15deg);
+            filter: drop-shadow(0 3px 2px rgba(0,0,0,0.3));
+            opacity: 0.9;
+        }
+
+        .red-envelope::before {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 14px;
+            background: linear-gradient(to top, #f4c542, #f4c54280);
+            border-radius: 0 0 20px 20px;
+            opacity: 0.7;
+        }
+
+        .red-envelope:hover {
+            transform: scale(1.02);
+            box-shadow: 0 8px 0 #9e2b2b, 0 12px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .red-envelope.correct {
+            background: #6aa84f;
+            border-color: #b6e3a0;
+            box-shadow: 0 0 0 6px #ffe28c, 0 8px 0 #3f6b2b;
+            animation: correctPop 0.3s ease;
+            pointer-events: none;
+        }
+
+        @keyframes correctPop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+            100% { transform: scale(1); }
+        }
+
+        /* 错误：变灰但仍继续下落 */
+        .red-envelope.wrong {
+            background: #666;
+            border-color: #999;
+            box-shadow: 0 0 0 6px #ffb3b3, 0 8px 0 #333;
+            animation: wrongShake 0.3s ease;
+            pointer-events: none;
+            opacity: 0.85;
+        }
+
+        @keyframes wrongShake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            50% { transform: translateX(8px); }
+            75% { transform: translateX(-4px); }
+            100% { transform: translateX(0); }
+        }
+
+        .message-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 20, 40, 0.75);
+            backdrop-filter: blur(4px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .message-overlay.show {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .message-card {
+            background: #ffefc0;
+            border-radius: 80px 80px 50px 50px;
+            padding: 40px 70px;
+            text-align: center;
+            border: 10px solid #ffb347;
+            box-shadow: 0 20px 0 #8f5e2e, 0 25px 30px rgba(0, 0, 0, 0.5);
+            transform: scale(0.9);
+            transition: transform 0.2s;
+            max-width: 90vw;
+        }
+
+        .message-overlay.show .message-card {
+            transform: scale(1);
+        }
+
+        .message-card h2 {
+            font-size: 3rem;
+            margin: 0 0 15px;
+            color: #f05454;
+            text-shadow: 4px 4px 0 #ffd966;
+            font-weight: 900;
+            letter-spacing: 2px;
+        }
+
+        .message-card p {
+            font-size: 1.8rem;
+            margin: 10px 0 25px;
+            font-weight: 700;
+            color: #2a3b4c;
+        }
+
+        .message-card button {
+            background: #6aa84f;
+            border: none;
+            padding: 15px 50px;
+            font-size: 1.8rem;
+            font-weight: 800;
+            border-radius: 50px;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 10px 0 #3f6b2b, 0 5px 10px rgba(0,0,0,0.3);
+            transition: all 0.07s;
+            border: 3px solid #b6e3a0;
+            transform: translateY(-3px);
+            font-family: inherit;
+        }
+
+        .message-card button:active {
+            box-shadow: 0 4px 0 #3f6b2b;
+            transform: translateY(5px);
+        }
+
+        @media (max-width: 750px) {
+            .game-wrapper {
+                padding: 12px 12px 18px;
+                height: 98vh;
+            }
+            .red-envelope {
+                width: 100px;
+                height: 80px;
+                font-size: 0.85rem;
+                padding: 4px 6px;
+            }
+            .red-envelope.zh {
+                font-size: 0.8rem;
+            }
+            .red-envelope::after {
+                font-size: 1.1rem;
+                top: -8px;
+                right: -6px;
+            }
+            .prompt-text {
+                font-size: 1.8rem;
+            }
+            .timer-box {
+                font-size: 1.4rem;
+                padding: 2px 12px;
+            }
+            .score-box {
+                font-size: 1.3rem;
+                padding: 2px 16px;
+            }
+            .restart-btn {
+                font-size: 1rem;
+                padding: 4px 14px;
+            }
+            .message-card h2 {
+                font-size: 2.2rem;
+            }
+            .message-card p {
+                font-size: 1.4rem;
+            }
+            .speaker-btn {
+                width: 36px;
+                height: 36px;
+                font-size: 1.1rem;
+            }
+        }
+
+        @media (max-width: 500px) {
+            .header {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 6px;
+                border-radius: 60px;
+                padding: 6px 12px;
+            }
+            .red-envelope {
+                width: 80px;
+                height: 65px;
+                font-size: 0.65rem;
+                border-radius: 12px 12px 16px 16px;
+                padding: 3px 4px;
+            }
+            .red-envelope.zh {
+                font-size: 0.6rem;
+            }
+            .red-envelope::after {
+                font-size: 0.9rem;
+                top: -6px;
+                right: -4px;
+            }
+            .prompt-text {
+                font-size: 1.4rem;
+            }
+            .prompt-label {
+                font-size: 0.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-wrapper">
+        <div class="header">
+            <div class="timer-box">
+                <span class="rocket-icon">⏱️🚀</span> <span id="timerDisplay">60</span><span>s</span>
+            </div>
+            <div class="score-box">
+                <span>🏆</span> <span id="scoreDisplay">0</span>
+            </div>
+            <button class="restart-btn" id="restartButton">🔄 Restart</button>
+        </div>
+
+        <div class="game-area">
+            <div class="falling-zone" id="fallingZone"></div>
+            <div class="prompt-zone" id="promptZone">
+                <div class="prompt-label">Tap the matching envelope 👇</div>
+                <div class="prompt-text" id="promptText">Loading...</div>
+                <button class="speaker-btn" id="speakerBtn" title="Hear the word again">🔊</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="message-overlay" id="messageOverlay">
+        <div class="message-card">
+            <h2 id="messageTitle">🚀 Great!</h2>
+            <p id="messageText">You completed all pairs!</p>
+            <button id="restartFromOverlay">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const WORD_PAIRS = [
+                { word: 'aerospace', meaning: '航空航天工业' },
+                { word: 'commercial', meaning: '商业的' },
+                { word: 'launch', meaning: '（航天器的）发射' },
+                { word: 'hub', meaning: '中心，枢纽' },
+                { word: 'destination', meaning: '目的地' },
+                { word: 'rocket', meaning: '火箭' },
+                { word: 'enthusiast', meaning: '热衷者' },
+                { word: 'geographical', meaning: '地理的' },
+                { word: 'benefit', meaning: '好处；益处' },
+                { word: 'satellite', meaning: '人造卫星' },
+                { word: 'data', meaning: '数据' }
+            ];
+
+            const TOTAL_TIME = 60;
+            const FALLING_SPEED_BASE = 0.9;
+
+            let currentPrompt = null;
+            let promptIsEnglish = false;
+            let remainingPairs = [];
+            let score = 0;
+            let timer = TOTAL_TIME;
+            let timerInterval = null;
+            let gameActive = false;
+            let spawnIntervalId = null;
+            let animationFrameId = null;
+            let envelopes = [];
+            let speechSynth = window.speechSynthesis || null;
+
+            const fallingZone = document.getElementById('fallingZone');
+            const promptText = document.getElementById('promptText');
+            const timerDisplay = document.getElementById('timerDisplay');
+            const scoreDisplay = document.getElementById('scoreDisplay');
+            const restartButton = document.getElementById('restartButton');
+            const messageOverlay = document.getElementById('messageOverlay');
+            const messageTitle = document.getElementById('messageTitle');
+            const messageText = document.getElementById('messageText');
+            const restartFromOverlay = document.getElementById('restartFromOverlay');
+            const speakerBtn = document.getElementById('speakerBtn');
+
+            function shuffleArray(arr) {
+                for (let i = arr.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [arr[i], arr[j]] = [arr[j], arr[i]];
+                }
+                return arr;
+            }
+
+            function updateScoreDisplay() {
+                scoreDisplay.textContent = score;
+            }
+
+            function updateTimerDisplay() {
+                timerDisplay.textContent = timer;
+            }
+
+            function stopTimer() {
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
+            }
+
+            function startTimer() {
+                stopTimer();
+                timer = TOTAL_TIME;
+                updateTimerDisplay();
+                timerInterval = setInterval(() => {
+                    timer -= 1;
+                    updateTimerDisplay();
+                    if (timer <= 0) {
+                        timer = 0;
+                        updateTimerDisplay();
+                        stopTimer();
+                        endGame(false);
+                    }
+                }, 1000);
+            }
+
+            function clearAllEnvelopes() {
+                envelopes.forEach(env => {
+                    if (env.el && env.el.parentNode) {
+                        env.el.remove();
+                    }
+                });
+                envelopes = [];
+            }
+
+            function stopSpawning() {
+                if (spawnIntervalId) {
+                    clearInterval(spawnIntervalId);
+                    spawnIntervalId = null;
+                }
+            }
+
+            function stopAnimation() {
+                if (animationFrameId) {
+                    cancelAnimationFrame(animationFrameId);
+                    animationFrameId = null;
+                }
+            }
+
+            function speakWord(word) {
+                if (!speechSynth) return;
+                speechSynth.cancel();
+                const utterance = new SpeechSynthesisUtterance(word);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.9;
+                utterance.pitch = 1;
+                utterance.volume = 1;
+                utterance.onstart = () => {
+                    speakerBtn.classList.add('playing');
+                };
+                utterance.onend = () => {
+                    speakerBtn.classList.remove('playing');
+                };
+                utterance.onerror = () => {
+                    speakerBtn.classList.remove('playing');
+                };
+                speechSynth.speak(utterance);
+            }
+
+            function pickNextPrompt() {
+                if (remainingPairs.length === 0) {
+                    remainingPairs = shuffleArray([...WORD_PAIRS]);
+                }
+                const pair = remainingPairs.shift();
+                currentPrompt = pair;
+                promptIsEnglish = Math.random() < 0.5;
+                if (promptIsEnglish) {
+                    promptText.textContent = pair.word;
+                    promptText.style.fontStyle = 'italic';
+                    promptText.style.color = '#1b4d6e';
+                } else {
+                    promptText.textContent = pair.meaning;
+                    promptText.style.fontStyle = 'normal';
+                    promptText.style.color = '#2a3b4c';
+                }
+            }
+
+            function spawnWave() {
+                if (!gameActive || !currentPrompt) return;
+                if (envelopes.length >= 4) return;
+                if (envelopes.length > 0) return;
+
+                const pair = currentPrompt;
+                const envelopeIsChinese = promptIsEnglish;
+                const correctText = envelopeIsChinese ? pair.meaning : pair.word;
+
+                const otherPairs = WORD_PAIRS.filter(p => p.word !== pair.word);
+                const shuffledOthers = shuffleArray([...otherPairs]);
+
+                const wrongOptions = [];
+                for (let p of shuffledOthers) {
+                    const text = envelopeIsChinese ? p.meaning : p.word;
+                    if (text !== correctText && !wrongOptions.includes(text)) {
+                        wrongOptions.push(text);
+                    }
+                    if (wrongOptions.length >= 3) break;
+                }
+
+                let options = [correctText, ...wrongOptions];
+                options = shuffleArray(options);
+
+                const zoneWidth = fallingZone.clientWidth;
+                const envelopeWidth = window.innerWidth < 500 ? 80 : (window.innerWidth < 750 ? 100 : 130);
+                const startTop = -120;
+
+                const segmentWidth = zoneWidth / 4;
+                const shuffledIndices = shuffleArray([0, 1, 2, 3]);
+
+                options.forEach((text, idx) => {
+                    const isCorrect = (text === correctText);
+                    const posIndex = shuffledIndices[idx];
+                    let left = posIndex * segmentWidth + (segmentWidth - envelopeWidth) / 2;
+                    left = Math.max(5, Math.min(left, zoneWidth - envelopeWidth - 5));
+
+                    const envEl = document.createElement('div');
+                    envEl.className = 'red-envelope' + (envelopeIsChinese ? ' zh' : '');
+                    envEl.textContent = text;
+                    envEl.style.left = left + 'px';
+                    envEl.style.top = startTop + 'px';
+                    envEl.style.width = envelopeWidth + 'px';
+
+                    const envelopeObj = {
+                        el: envEl,
+                        isCorrect: isCorrect,
+                        top: startTop,
+                        speed: FALLING_SPEED_BASE + (Math.random() * 0.2),
+                        word: pair.word,
+                        answered: false,
+                    };
+
+                    envEl.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        handleEnvelopeClick(envelopeObj);
+                    });
+
+                    fallingZone.appendChild(envEl);
+                    envelopes.push(envelopeObj);
+                });
+            }
+
+            function handleEnvelopeClick(envObj) {
+                if (!gameActive) return;
+                if (envObj.answered) return;
+                envObj.answered = true;
+
+                if (envObj.isCorrect) {
+                    speakWord(envObj.word);
+                    envObj.el.classList.add('correct');
+                    score += 1;
+                    updateScoreDisplay();
+
+                    setTimeout(() => {
+                        envelopes.forEach(env => {
+                            if (env.el && env.el.parentNode) {
+                                env.el.remove();
+                            }
+                        });
+                        envelopes = [];
+
+                        if (gameActive) {
+                            pickNextPrompt();
+                            spawnWave();
+                        }
+                    }, 500);
+                } else {
+                    // 错误：变灰但仍继续下落（不设置 answered 为 true 以阻止下落）
+                    // 但我们已设置 answered=true 用于防止重复点击，需要在动画中特殊处理：如果 answered 但 wrong，继续下落
+                    envObj.el.classList.add('wrong');
+                    // 保留 answered = true 防止再次点击，但动画中要让它继续掉落
+                }
+            }
+
+            function animateEnvelopes() {
+                if (!gameActive) {
+                    animationFrameId = requestAnimationFrame(animateEnvelopes);
+                    return;
+                }
+
+                const zoneHeight = fallingZone.clientHeight;
+                const removeList = [];
+
+                envelopes.forEach((env) => {
+                    if (!env.el) return;
+                    // 如果已 answered 且是 correct，停止移动（等待消失）；如果 answered 且 wrong，继续下落
+                    // 我们通过是否含 'correct' 类判断
+                    if (env.answered && env.el.classList.contains('correct')) {
+                        return; // 正确的已停住等待消失
+                    }
+                    // 错误红包或未点击的红包继续下落
+                    env.top += env.speed;
+                    env.el.style.top = env.top + 'px';
+
+                    if (env.top > zoneHeight) {
+                        // 如果是正确红包且未被点击（没有correct类），则结束游戏
+                        if (env.isCorrect && !env.el.classList.contains('correct') && gameActive) {
+                            endGame(false);
+                        }
+                        removeList.push(env);
+                    }
+                });
+
+                removeList.forEach(env => {
+                    if (env.el && env.el.parentNode) {
+                        env.el.remove();
+                    }
+                    const idx = envelopes.indexOf(env);
+                    if (idx !== -1) envelopes.splice(idx, 1);
+                });
+
+                animationFrameId = requestAnimationFrame(animateEnvelopes);
+            }
+
+            function startAnimation() {
+                stopAnimation();
+                animationFrameId = requestAnimationFrame(animateEnvelopes);
+            }
+
+            function startSpawning() {
+                stopSpawning();
+                setTimeout(() => {
+                    if (gameActive) spawnWave();
+                }, 100);
+                spawnIntervalId = setInterval(() => {
+                    if (!gameActive) return;
+                    if (envelopes.length === 0) {
+                        spawnWave();
+                    }
+                }, 400);
+            }
+
+            function endGame(win) {
+                if (!gameActive) return;
+                gameActive = false;
+                stopTimer();
+                stopSpawning();
+                clearAllEnvelopes();
+                if (speechSynth) speechSynth.cancel();
+                if (win) {
+                    messageTitle.textContent = '🚀 Great!';
+                    messageText.textContent = `You matched ${score} pairs! Well done!`;
+                } else {
+                    messageTitle.textContent = '⏰ Time\'s Up!';
+                    messageText.textContent = `You matched ${score} pairs. Try again!`;
+                }
+                messageOverlay.classList.add('show');
+                stopAnimation();
+            }
+
+            function resetGame() {
+                stopTimer();
+                stopSpawning();
+                stopAnimation();
+                clearAllEnvelopes();
+                if (speechSynth) speechSynth.cancel();
+                messageOverlay.classList.remove('show');
+                speakerBtn.classList.remove('playing');
+
+                score = 0;
+                updateScoreDisplay();
+                gameActive = true;
+                remainingPairs = shuffleArray([...WORD_PAIRS]);
+                timer = TOTAL_TIME;
+                updateTimerDisplay();
+
+                pickNextPrompt();
+                fallingZone.innerHTML = '';
+
+                startTimer();
+                startSpawning();
+                startAnimation();
+            }
+
+            speakerBtn.addEventListener('click', () => {
+                if (currentPrompt && currentPrompt.word) {
+                    speakWord(currentPrompt.word);
+                }
+            });
+
+            function init() {
+                restartButton.addEventListener('click', resetGame);
+                restartFromOverlay.addEventListener('click', resetGame);
+                window.addEventListener('load', resetGame);
+            }
+
+            init();
+        })();
+    </script>
+</body>
+</html>
