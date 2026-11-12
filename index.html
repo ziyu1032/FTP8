@@ -533,6 +533,20 @@
             let envelopes = [];
             let speechSynth = window.speechSynthesis || null;
 
+            /* 真人发音音频（en-US-AndrewNeural 男声） */
+            const WORD_INDEX = {};
+            WORD_PAIRS.forEach((p, i) => { WORD_INDEX[p.word] = i; });
+            function wordAudio(word) {
+                const i = WORD_INDEX[word];
+                return (i === undefined) ? null : 'audio_w' + String(i + 1).padStart(2, '0') + '.mp3';
+            }
+            let curAudio = null;
+            function playClip(src) {
+                try { if (curAudio) { curAudio.pause(); curAudio.currentTime = 0; } } catch (e) {}
+                curAudio = new Audio(src);
+                return curAudio;
+            }
+
             const fallingZone = document.getElementById('fallingZone');
             const promptText = document.getElementById('promptText');
             const timerDisplay = document.getElementById('timerDisplay');
@@ -607,23 +621,15 @@
             }
 
             function speakWord(word) {
-                if (!speechSynth) return;
-                speechSynth.cancel();
-                const utterance = new SpeechSynthesisUtterance(word);
-                utterance.lang = 'en-US';
-                utterance.rate = 0.9;
-                utterance.pitch = 1;
-                utterance.volume = 1;
-                utterance.onstart = () => {
-                    speakerBtn.classList.add('playing');
-                };
-                utterance.onend = () => {
-                    speakerBtn.classList.remove('playing');
-                };
-                utterance.onerror = () => {
-                    speakerBtn.classList.remove('playing');
-                };
-                speechSynth.speak(utterance);
+                /* 真人男声美式发音：预生成 MP3（en-US-AndrewNeural），点击即播 */
+                const src = wordAudio(word);
+                if (!src) return;
+                speakerBtn.classList.add('playing');
+                const a = playClip(src);
+                a.onended = () => speakerBtn.classList.remove('playing');
+                a.onerror = () => speakerBtn.classList.remove('playing');
+                const p = a.play();
+                if (p && p.catch) p.catch(() => speakerBtn.classList.remove('playing'));
             }
 
             function pickNextPrompt() {
@@ -804,6 +810,7 @@
                 stopSpawning();
                 clearAllEnvelopes();
                 if (speechSynth) speechSynth.cancel();
+                try { if (curAudio) { curAudio.pause(); curAudio.currentTime = 0; } speakerBtn.classList.remove('playing'); } catch (e) {}
                 if (win) {
                     messageTitle.textContent = '🚀 Great!';
                     messageText.textContent = `You matched ${score} pairs! Well done!`;
@@ -821,6 +828,7 @@
                 stopAnimation();
                 clearAllEnvelopes();
                 if (speechSynth) speechSynth.cancel();
+                try { if (curAudio) { curAudio.pause(); curAudio.currentTime = 0; } speakerBtn.classList.remove('playing'); } catch (e) {}
                 messageOverlay.classList.remove('show');
                 speakerBtn.classList.remove('playing');
 
