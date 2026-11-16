@@ -241,10 +241,10 @@
             padding: 8px 10px;
             cursor: pointer;
             transition: transform 0.08s, box-shadow 0.08s, background 0.15s;
-            word-break: keep-all;
-            white-space: nowrap;
+            word-break: break-word;
+            overflow-wrap: break-word;
+            white-space: normal;
             overflow: hidden;
-            text-overflow: ellipsis;
             line-height: 1.2;
             user-select: none;
             background-image: radial-gradient(circle at 30% 30%, #ff7b7b 0%, #e63946 80%);
@@ -399,13 +399,10 @@
                 height: 98vh;
             }
             .red-envelope {
-                width: 112px;
-                height: 88px;
-                font-size: 1.0rem;
-                padding: 5px 7px;
-            }
-            .red-envelope.zh {
-                font-size: 0.95rem;
+                width: auto;
+                height: 90px;
+                font-size: 1.05rem;
+                padding: 5px 6px;
             }
             .red-envelope::after {
                 font-size: 1.2rem;
@@ -452,14 +449,11 @@
                 padding: 6px 12px;
             }
             .red-envelope {
-                width: 106px;
-                height: 86px;
-                font-size: 0.98rem;
+                width: auto;
+                height: 88px;
+                font-size: 1rem;
                 border-radius: 12px 12px 16px 16px;
-                padding: 5px 6px;
-            }
-            .red-envelope.zh {
-                font-size: 0.92rem;
+                padding: 5px 5px;
             }
             .red-envelope::after {
                 font-size: 1.1rem;
@@ -678,17 +672,37 @@
                 options = shuffleArray(options);
 
                 const zoneWidth = fallingZone.clientWidth;
-                const envelopeWidth = window.innerWidth < 500 ? 106 : (window.innerWidth < 750 ? 112 : 130);
                 const startTop = -120;
 
+                const isPhone = window.innerWidth < 500;
+                const isTablet = window.innerWidth < 750;
                 const segmentWidth = zoneWidth / 4;
+                // 信封宽度严格按每列可用宽度计算，绝不超出列宽，四封信封不可能互相遮挡
+                const envelopeWidth = Math.max(44, Math.min(isPhone ? 104 : (isTablet ? 112 : 130), segmentWidth - 8));
+                const sidePad = isPhone ? 10 : (isTablet ? 12 : 20);      // CSS 左右 padding 合计
+                const availW = Math.max(24, envelopeWidth - sidePad - 6); // 再扣掉左右各 3px 边框
+                const availH = (isPhone ? 88 : (isTablet ? 90 : 100)) - 22;
+                const baseFs = isPhone ? 15.5 : (isTablet ? 16 : 17.6);
                 const shuffledIndices = shuffleArray([0, 1, 2, 3]);
+
+                // 从大往小试字号，取能完整放进信封（允许自动换行）的最大字号
+                function fitFontSize(text) {
+                    const n = [...text].length;
+                    const hasCJK = /[\u3000-\u303f\u4e00-\u9fff\uff00-\uffef]/.test(text);
+                    const unit = hasCJK ? 1.02 : 0.60;   // 单字相对字号的宽度系数
+                    for (let fs = baseFs; fs >= 9; fs -= 0.5) {
+                        const perLine = Math.max(1, Math.floor(availW / (unit * fs)));
+                        const lines = Math.ceil(n / perLine);
+                        if (lines * fs * 1.25 <= availH) return fs;
+                    }
+                    return 9;
+                }
 
                 options.forEach((text, idx) => {
                     const isCorrect = (text === correctText);
                     const posIndex = shuffledIndices[idx];
                     let left = posIndex * segmentWidth + (segmentWidth - envelopeWidth) / 2;
-                    left = Math.max(5, Math.min(left, zoneWidth - envelopeWidth - 5));
+                    left = Math.max(4, Math.min(left, zoneWidth - envelopeWidth - 4));
 
                     const envEl = document.createElement('div');
                     envEl.className = 'red-envelope' + (envelopeIsChinese ? ' zh' : '');
@@ -696,6 +710,7 @@
                     envEl.style.left = left + 'px';
                     envEl.style.top = startTop + 'px';
                     envEl.style.width = envelopeWidth + 'px';
+                    envEl.style.fontSize = fitFontSize(text) + 'px';
 
                     const envelopeObj = {
                         el: envEl,
