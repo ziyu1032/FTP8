@@ -399,33 +399,36 @@
                 height: 98vh;
             }
             .red-envelope {
-                width: 100px;
-                height: 80px;
-                font-size: 0.85rem;
-                padding: 4px 6px;
+                width: 112px;
+                height: 88px;
+                font-size: 1.0rem;
+                padding: 5px 7px;
             }
             .red-envelope.zh {
-                font-size: 0.8rem;
+                font-size: 0.95rem;
             }
             .red-envelope::after {
-                font-size: 1.1rem;
+                font-size: 1.2rem;
                 top: -8px;
                 right: -6px;
             }
             .prompt-text {
-                font-size: 1.8rem;
+                font-size: 2.0rem;
+            }
+            .prompt-label {
+                font-size: 0.85rem;
             }
             .timer-box {
-                font-size: 1.4rem;
+                font-size: 1.5rem;
                 padding: 2px 12px;
             }
             .score-box {
-                font-size: 1.3rem;
+                font-size: 1.4rem;
                 padding: 2px 16px;
             }
             .restart-btn {
-                font-size: 1rem;
-                padding: 4px 14px;
+                font-size: 1.1rem;
+                padding: 5px 16px;
             }
             .message-card h2 {
                 font-size: 2.2rem;
@@ -434,9 +437,9 @@
                 font-size: 1.4rem;
             }
             .speaker-btn {
-                width: 36px;
-                height: 36px;
-                font-size: 1.1rem;
+                width: 42px;
+                height: 42px;
+                font-size: 1.3rem;
             }
         }
 
@@ -449,25 +452,25 @@
                 padding: 6px 12px;
             }
             .red-envelope {
-                width: 80px;
-                height: 65px;
-                font-size: 0.65rem;
+                width: 106px;
+                height: 86px;
+                font-size: 0.98rem;
                 border-radius: 12px 12px 16px 16px;
-                padding: 3px 4px;
+                padding: 5px 6px;
             }
             .red-envelope.zh {
-                font-size: 0.6rem;
+                font-size: 0.92rem;
             }
             .red-envelope::after {
-                font-size: 0.9rem;
-                top: -6px;
-                right: -4px;
+                font-size: 1.1rem;
+                top: -8px;
+                right: -5px;
             }
             .prompt-text {
-                font-size: 1.4rem;
+                font-size: 1.8rem;
             }
             .prompt-label {
-                font-size: 0.7rem;
+                font-size: 0.85rem;
             }
         }
     </style>
@@ -675,7 +678,7 @@
                 options = shuffleArray(options);
 
                 const zoneWidth = fallingZone.clientWidth;
-                const envelopeWidth = window.innerWidth < 500 ? 80 : (window.innerWidth < 750 ? 100 : 130);
+                const envelopeWidth = window.innerWidth < 500 ? 106 : (window.innerWidth < 750 ? 112 : 130);
                 const startTop = -120;
 
                 const segmentWidth = zoneWidth / 4;
